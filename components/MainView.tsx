@@ -1,14 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useTaskStore } from '../store/useTaskStore';
-import { Check, Star, Sun, LogOut } from 'lucide-react';
+import { Check, Star, Sun, LogOut, Menu } from 'lucide-react';
 import { motion } from 'motion/react';
 import TaskDetailPanel from './TaskDetailPanel';
 import { playCompleteSound } from '../lib/sound';
 import { getSupabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
 
-export default function MainView() {
+export default function MainView({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { tasks, lists, selectedListId, addTask, toggleTask, toggleImportant, toggleMyDay, setSelectedTask, selectedTaskId, loadTasks } = useTaskStore();
   const [text, setText] = useState('');
   const [hideCompleted, setHideCompleted] = useState(false);
@@ -36,6 +36,9 @@ export default function MainView() {
   };
 
   const listTitle = lists.find(l => l.id === selectedListId)?.title || "Tarefas";
+// ... (rest of the file seems fine, skipping to main return)
+// need to use edit_file correctly to just replace the header
+
 
   const today = new Date();
   const filteredTasks = tasks.filter((t) => {
@@ -79,7 +82,12 @@ export default function MainView() {
       <main className="flex-1 bg-white dark:bg-[#2b2a29] p-4 md:p-8 overflow-y-auto w-full">
         {userEmail && <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">{userEmail}</div>}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-[#323130] dark:text-[#f3f2f1]">{listTitle}</h1>
+          <div className="flex items-center gap-3">
+              <button className="md:hidden p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" onClick={toggleSidebar}>
+                  <Menu size={20} />
+              </button>
+              <h1 className="text-2xl font-semibold text-[#323130] dark:text-[#f3f2f1]">{listTitle}</h1>
+          </div>
           <div className="flex items-center gap-4">
             <button 
                 onClick={handleLogout}

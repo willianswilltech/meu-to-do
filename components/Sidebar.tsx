@@ -2,13 +2,20 @@ import { LayoutDashboard, Inbox, Plus, Moon, Sun, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
 import { useState } from 'react';
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose: () => void }) {
   const { lists, setSelectedList, selectedListId, addList, deleteList, updateList } = useTaskStore();
   const [isDark, setIsDark] = useState(false);
   const [isAddingList, setIsAddingList] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingListTitle, setEditingListTitle] = useState('');
+  
+  const handleSelectList = (id: string) => {
+    setSelectedList(id);
+    onClose();
+  };
+//... update the rest of the file to use handleSelectList instead of setSelectedList
+
 
   const toggleDarkMode = () => {
     setIsDark(!isDark);
@@ -42,14 +49,14 @@ export default function Sidebar() {
             key={list.id}
             role="button"
             tabIndex={0}
-            onClick={() => setSelectedList(list.id)}
+            onClick={() => handleSelectList(list.id)}
             onDoubleClick={() => { 
                 if (list.id !== '1' && list.id !== '2') {
                     setEditingListId(list.id); 
                     setEditingListTitle(list.title); 
                 }
             }}
-            onKeyDown={(e) => e.key === 'Enter' && setSelectedList(list.id)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSelectList(list.id)}
             className={`w-full flex items-center justify-between group gap-3 px-3 py-2.5 rounded text-sm cursor-pointer ${
               selectedListId === list.id ? 'bg-white dark:bg-[#323130] shadow-sm text-[#2564cf]' : 'hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.05)] text-[#323130] dark:text-[#f3f2f1]'
             }`}
