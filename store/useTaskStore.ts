@@ -24,6 +24,7 @@ export interface Task {
 export interface List {
   id: string;
   title: string;
+  parentId?: string | null;
 }
 
 interface TaskStore {
@@ -39,13 +40,16 @@ interface TaskStore {
   updateTask: (id: string, updates: Partial<Task>) => void;
   setSelectedList: (id: string) => void;
   setSelectedTask: (id: string | null) => void;
-  addList: (title: string) => void;
+  addList: (title: string, parentId?: string | null) => void;
   updateList: (id: string, title: string) => void;
   deleteList: (id: string) => void;
+  addSubtask: (taskId: string, text: string) => void;
+  toggleSubtask: (taskId: string, subtaskId: string) => void;
+  deleteSubtask: (taskId: string, subtaskId: string) => void;
   loadTasks: () => Promise<void>;
 }
 
-export const useTaskStore = create<TaskStore>()((set) => ({
+export const useTaskStore = create<TaskStore>()((set, get) => ({
       tasks: [],
       lists: [
         { id: '1', title: 'Meu Dia' },
@@ -72,6 +76,7 @@ export const useTaskStore = create<TaskStore>()((set) => ({
       addTask: async (text) => {
         const supabase = getSupabase();
         const user = supabase ? (await supabase.auth.getSession()).data.session?.user : null;
+        const selectedListId = get().selectedListId;
         
         const newTask = {
             id: Date.now().toString(),
@@ -79,7 +84,7 @@ export const useTaskStore = create<TaskStore>()((set) => ({
             completed: false,
             important: false,
             myDay: false, // simplified for now
-            listId: "1",
+            listId: selectedListId,
             createdAt: Date.now(),
             subtasks: [],
             user_id: user?.id,
@@ -124,9 +129,9 @@ export const useTaskStore = create<TaskStore>()((set) => ({
         })),
       setSelectedList: (id) => set({ selectedListId: id, selectedTaskId: null }),
       setSelectedTask: (id) => set({ selectedTaskId: id }),
-      addList: (title) =>
+      addList: (title, parentId = null) =>
         set((state) => ({
-          lists: [...state.lists, { id: Date.now().toString(), title }],
+          lists: [...state.lists, { id: Date.now().toString(), title, parentId }],
         })),
       updateList: (id, title) =>
         set((state) => ({
@@ -137,5 +142,43 @@ export const useTaskStore = create<TaskStore>()((set) => ({
           lists: state.lists.filter((l) => l.id !== id),
           tasks: state.tasks.filter((t) => t.listId !== id),
           selectedListId: state.selectedListId === id ? state.lists[0]?.id || '1' : state.selectedListId,
+        })),
+      addSubtask: (taskId, text) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  subtasks: [
+                    ...t.subtasks,
+                    { id: Date.now().toString(), text, completed: false },
+                  ],
+                }
+              : t
+          ),
+        })),
+      toggleSubtask: (taskId, subtaskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  subtasks: t.subtasks.map((st) =>
+                    st.id === subtaskId ? { ...st, completed: !st.completed } : st
+                  ),
+                }
+              : t
+          ),
+        })),
+      deleteSubtask: (taskId, subtaskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  subtasks: t.subtasks.filter((st) => st.id !== subtaskId),
+                }
+              : t
+          ),
         })),
     }));
