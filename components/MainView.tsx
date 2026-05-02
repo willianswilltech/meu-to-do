@@ -123,7 +123,7 @@ export default function MainView({ toggleSidebar }: { toggleSidebar: () => void 
                 setText('');
               }
             }}
-            className="w-full bg-transparent px-4 py-3.5 outline-none text-sm placeholder-[#2564cf] dark:placeholder-[#4ca3f4]"
+            className="w-full bg-transparent px-4 py-3.5 outline-none text-sm text-[#323130] dark:text-white placeholder-[#2564cf] dark:placeholder-[#4ca3f4]"
           />
         </div>
         <div className="space-y-1">

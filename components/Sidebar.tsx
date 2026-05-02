@@ -1,6 +1,6 @@
 import { LayoutDashboard, Inbox, Plus, Moon, Sun, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../store/useTaskStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Sidebar({ onClose }: { onClose: () => void }) {
   const { lists, setSelectedList, selectedListId, addList, deleteList, updateList } = useTaskStore();
@@ -11,14 +11,28 @@ export default function Sidebar({ onClose }: { onClose: () => void }) {
   const [editingListTitle, setEditingListTitle] = useState('');
   const [isAddingSublistTo, setIsAddingSublistTo] = useState<string | null>(null);
   
+  // Carregar preferência ao montar
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    setIsDark(prefersDark);
+    document.documentElement.classList.toggle('dark', prefersDark);
+    document.body.classList.toggle('dark', prefersDark);
+  }, []);
+
   const handleSelectList = (id: string) => {
     setSelectedList(id);
     onClose();
   };
 
   const toggleDarkMode = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
+    console.log("Toggle dark mode called, current state:", isDark);
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', newIsDark);
+    document.body.classList.toggle('dark', newIsDark);
   };
 
   const handleAddList = (parentId: string | null = null) => {
